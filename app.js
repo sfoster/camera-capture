@@ -24,12 +24,25 @@ Author: Eric Bidelman (ericbidelman@chromium.org)
  * @see http://developer.chrome.com/trunk/apps/manifest.html#permissions
  */
 
-navigator.getUserMedia = navigator.getUserMedia || navigator.mozGetUserMedia || navigator.webkitGetUserMedia; 
+navigator.getUserMedia = navigator.getUserMedia || navigator.mozGetUserMedia || navigator.webkitGetUserMedia;
+
 function getCamera() {
   if(navigator.getUserMedia) {
-    navigator.getUserMedia({audio: false, video: true}, function(stream) {
+    navigator.getUserMedia({video: true}, function(stream) {
       console.log("Got stream:", stream);
-      document.querySelector('video').src = ('webkitURL' in window) ? webkitURL.createObjectURL(stream) : stream;
+      var video = document.querySelector('video'); 
+      if('mozSrcObject' in video) {
+        console.log("Mozillian style");
+        video.mozSrcObject = stream;
+      } else if('webkitURL' in window) {
+        console.log("Webkit style");
+        video.src = webkitURL.createObjectURL(stream);
+      } else if('URL' in window){
+        console.log("URL.createObjectURL style");
+        video.src = URL.createObjectURL(stream);
+      } else {
+        console.log("No path to handle stream");
+      }
     }, function(e) {
       console.error(e);
     });
